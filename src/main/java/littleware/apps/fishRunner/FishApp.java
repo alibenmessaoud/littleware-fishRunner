@@ -164,6 +164,7 @@ public class FishApp implements Callable
      */
     public static enum Flag {
         S3_KEY, S3_SECRET, S3_CREDSFILE,
+        PORT,
         DATABASE_URL, WAR_URI, CONTEXT_ROOT, LOGIN_URI;
     }
 
@@ -174,6 +175,7 @@ public class FishApp implements Callable
             "\nS3_SECRET" +
             "\nS3_CREDSFILE  - either both S3_KEY and S3_SECRET or S3_CREDSFILE must be defined" +
             "\nWAR_URI - required - either an s3:// URI otherwise treated as local file path" +
+            "\nPORT - optional - defaults to 8080 if not otherwise specified" +
             "\nLOGIN_URI - optional - JAAS login.conf location either and s3:// URI otherwise treated as local file path" +
             "\nCONTEXT_ROOT - required - glassfish deploy context root for war" +
             "\nDATABASE_URL - required - ex: postgres://user:password@host:port/database\n";
@@ -198,6 +200,7 @@ public class FishApp implements Callable
     {
         final Map<String,String> configMap = new HashMap<>();
 
+        configMap.put( Flag.PORT.toString(), "8080" );
         for( Flag key : Flag.values() ) {  // scan environment
             configMap.put( key.toString(), System.getenv(key.toString()));
         }
@@ -253,10 +256,12 @@ public class FishApp implements Callable
                     configMap.get( Flag.LOGIN_URI.toString() )
                     );
 
+            final int port = Integer.parseInt( configMap.get( Flag.PORT.toString()) );
             final Injector ij = Guice.createInjector( 
                     new AppModule( config ),
                     new FishModule( s3Key, s3Secret,
-                        new java.net.URI( configMap.get( Flag.DATABASE_URL.toString() ) )
+                        new java.net.URI( configMap.get( Flag.DATABASE_URL.toString() ) ),
+                        port
                         )
                     );
             
