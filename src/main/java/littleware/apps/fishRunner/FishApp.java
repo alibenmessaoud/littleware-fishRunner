@@ -21,10 +21,15 @@ import com.google.inject.Module;
 import com.google.inject.Provider;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,8 +125,21 @@ public class FishApp implements Callable
                 if ( null == meta ) {
                     throw new RuntimeException( "Unable to access resource: " + resourcePath );
                 }
+                
+                if ( "gzip".equalsIgnoreCase( meta.getContentEncoding() ) ) {
+                    // need to unzip the war ...
+                    final File temp = new File( destFile.getParentFile(), destFile.getName() + ".gz" );
+                    temp.delete();
+                    destFile.renameTo( temp );
+                    try (
+                        final InputStream gzin = new java.util.zip.GZIPInputStream( new FileInputStream( temp ) );
+                            ) {
+                        Files.copy( gzin, destFile.toPath() );
+                    }
+                }
+
                 return destFile;
-            } catch (URISyntaxException ex) {
+            } catch (URISyntaxException|IOException ex) {
                 throw new RuntimeException( "Failed parsing: " + resourcePath, ex );
             }
         } else {
