@@ -152,9 +152,10 @@ public class FishApp implements Callable
         try { // deploy war file
             final GlassFish gf = fishFactory.get();
             final Deployer deployer = gf.getDeployer();
+            log.log( Level.INFO, "Deploying .war: " + warFile.getCanonicalPath() );
             deployer.deploy( warFile, "--force=true", "--contextroot", config.CONTEXT_ROOT  );
             return gf;
-        } catch (GlassFishException ex) {
+        } catch (GlassFishException|IOException ex) {
             throw new RuntimeException( "Failed war deployment", ex);
         }
     }
