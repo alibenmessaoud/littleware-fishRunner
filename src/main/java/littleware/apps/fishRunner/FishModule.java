@@ -55,7 +55,7 @@ public class FishModule implements Module {
         binder.bind(FishFactory.class).in(Scopes.SINGLETON);
 
         final GlassFishProperties glassfishProperties = new GlassFishProperties();
-        glassfishProperties.setPort("http-listener", 8080);
+        glassfishProperties.setPort("http-listener", glassfishPort );
         // glassfishProperties.setPort("https-listener", 8181);
 
         binder.bind( GlassFishProperties.class ).toInstance( glassfishProperties );
