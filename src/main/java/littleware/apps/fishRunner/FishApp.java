@@ -219,7 +219,7 @@ public class FishApp implements Callable
 
         log.log( Level.INFO, "Setting up runtime environment: " );
         for( String key : configMap.keySet() ) {
-            log.log( Level.INFO, key + "=" + configMap.get(key) );
+            log.log( Level.INFO, key + "='" + configMap.get(key) + "'" );
         }
         
         try {
@@ -268,11 +268,17 @@ public class FishApp implements Callable
             final FishApp app = ij.getInstance( FishApp.class );
             final GlassFish gf = app.call();
             
-            System.out.println( "Enter 'quit' to shutdown server:\n> " );
+            System.out.print( "Enter 'quit' to shutdown server:\n> " );
+            System.out.flush();
             final BufferedReader reader = new BufferedReader( new InputStreamReader( System.in ) );
             while( true ) {
                 final String input = reader.readLine();
-                System.out.println( "\n> " );
+                System.out.print( "\n> " );
+                System.out.flush();
+                if ( null == input ) {
+                    log.log( Level.INFO, "stdin closed - assuming daemon environment - leaving interactive thread");
+                    break;
+                }
                 if ( input.equals( "quit" ) ) {
                     log.log( Level.INFO, "Shutting down ..." );
                     gf.stop();
